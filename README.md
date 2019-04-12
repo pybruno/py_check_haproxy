@@ -1,5 +1,5 @@
 
-# Nagios Check_haproxy
+# Nagios check_haproxy
 ## requirements:
 - requests
 
