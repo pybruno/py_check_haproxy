@@ -11,9 +11,9 @@ def build_parser():
     :return: parser config
     """
     parser = OptionParser(usage="usage: %prog [options]", version="%prog 1.0")
-    parser.add_option("-u", "--url", dest="url", help="url haproxy")
-    parser.add_option("-U", "--user", dest="user", help="user to login in")
-    parser.add_option("-P", '--pass', dest="password", help="haproxy password")
+    parser.add_option("-u", "--url", required=True, dest="url", help="url haproxy stat")
+    parser.add_option("-U", "--user", required=True, dest="user", help="user to login in")
+    parser.add_option("-P", '--pass', required=True, dest="password", help="haproxy password")
     parser.add_option("-p", dest="port", default="8000", help="port stats default 8000")
     return parser
 
@@ -56,8 +56,8 @@ class CheckHaproxy(object):
 if __name__ == "__main__":
     pars = build_parser()
     options, args = pars.parse_args()
-    if len(args) != 0:
-        pars.error("wrong number of arguments")
+    if len(args) != 1:
+        pars.print_help()
         exit(0)
     else:
         check = CheckHaproxy(options.url, options.user, options.password, options.port)
