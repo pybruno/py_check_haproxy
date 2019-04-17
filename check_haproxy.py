@@ -46,7 +46,7 @@ class CheckHaproxy(object):
 
     def nagios(self):
         if self.status:
-            print("CRITITCAL: {}".format(self.status))
+            print("CRITICAL: {}".format(self.status))
             exit(2)
         else:
             print("OK - ALL backend")
