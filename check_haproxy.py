@@ -2,7 +2,7 @@
 import csv
 import requests
 from requests.auth import HTTPBasicAuth
-from optparse import OptionParser
+import argparse
 
 
 def build_parser():
@@ -10,11 +10,12 @@ def build_parser():
     define param command line
     :return: parser config
     """
-    parser = OptionParser(usage="usage: %prog [options]", version="%prog 1.0")
-    parser.add_option("-u", "--url", required=True, dest="url", help="url haproxy stat")
-    parser.add_option("-U", "--user", required=True, dest="user", help="user to login in")
-    parser.add_option("-P", '--pass', required=True, dest="password", help="haproxy password")
-    parser.add_option("-p", dest="port", default="8000", help="port stats default 8000")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-u", "--url", required=True, dest="url", help="url haproxy stat default 127.0.0.1",
+                        default="http://127.0.0.1")
+    parser.add_argument("-U", "--user", required=True, dest="user", help="user to login in")
+    parser.add_argument("-P", '--pass', required=True, dest="password", help="haproxy password")
+    parser.add_argument("-p", dest="port", default="8000", help="port stats default 8000")
     return parser
 
 
@@ -30,18 +31,20 @@ class CheckHaproxy(object):
     def get_status(self):
         try:
             res = requests.get(self.url, 'r', auth=HTTPBasicAuth(self.user, self.password))
-            text_csv = res.iter_lines()
-        
-            csv_reader = csv.reader(text_csv, delimiter=',')
+            if res.status_code == 401:
+                print("CRITICAL: login or pasword is wrong")
+                exit(2)
+            else:
+                text_csv = res.iter_lines()
+                csv_reader = csv.reader(text_csv, delimiter=',')
+                for rows in csv_reader:
 
-            for rows in csv_reader:
-                # print(rows)
-                if rows[1] != "FRONTEND" and rows[1] != "BACKEND" and rows[1] != "svname":
-                    if rows[17] != "UP":
-                        self.status.append("backend: {} serveur: {} is OFF line".format(rows[0], rows[1]))
+                    if rows[1] != "FRONTEND" and rows[1] != "BACKEND" and rows[1] != "svname":
+                        if rows[17] != "UP":
+                            self.status.append("backend: {} serveur: {} is OFF line".format(rows[0], rows[1]))
 
         except Exception as e:
-            print("CRITICAL: {}".format(e))
+            print("CRITICAL: {} ".format(e))
             exit(2)
 
     def nagios(self):
@@ -55,12 +58,9 @@ class CheckHaproxy(object):
 
 if __name__ == "__main__":
     pars = build_parser()
-    options, args = pars.parse_args()
-    if len(args) != 1:
-        pars.print_help()
-        exit(0)
-    else:
-        check = CheckHaproxy(options.url, options.user, options.password, options.port)
-        check.get_status()
-        check.nagios()
+    args = pars.parse_args()
+
+    check = CheckHaproxy(args.url, args.user, args.password, args.port)
+    check.get_status()
+    check.nagios()
 
