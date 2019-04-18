@@ -11,7 +11,7 @@ def build_parser():
     :return: parser config
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument("-u", "--url", required=True, dest="url", help="url haproxy stat default 127.0.0.1",
+    parser.add_argument("-u", "--url", required=False, dest="url", help="url haproxy stat default 127.0.0.1",
                         default="http://127.0.0.1")
     parser.add_argument("-U", "--user", required=True, dest="user", help="user to login in")
     parser.add_argument("-P", '--pass', required=True, dest="password", help="haproxy password")
