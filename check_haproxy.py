@@ -3,7 +3,7 @@ import csv
 import requests
 from requests.auth import HTTPBasicAuth
 import argparse
-
+import codecs
 
 def build_parser():
     """
@@ -22,7 +22,7 @@ def build_parser():
 class CheckHaproxy(object):
 
     def __init__(self, url, user, password, port):
-        self.haproxy_csv = ":" + port + "/haproxy?stats;csv"
+        self.haproxy_csv = ":" + port + "/?stats;csv"
         self.url = url + self.haproxy_csv
         self.user = user
         self.password = password
@@ -36,12 +36,14 @@ class CheckHaproxy(object):
                 exit(2)
             else:
                 text_csv = res.iter_lines()
-                csv_reader = csv.reader(text_csv, delimiter=',')
+                csv_reader = csv.reader(codecs.iterdecode(text_csv, 'utf-8'), delimiter=',')
+                
                 for rows in csv_reader:
+                    # print(rows)
+                    if rows[1] != "FRONTEND" and rows[1] != "svname" and rows[0] != 'statistics' \
+                    and rows[17] != "UP" and rows[17] !='no check':
 
-                    if rows[1] != "FRONTEND" and rows[1] != "BACKEND" and rows[1] != "svname":
-                        if rows[17] != "UP":
-                            self.status.append("backend: {} serveur: {} is OFF line".format(rows[0], rows[1]))
+                        self.status.append("backend: {} serveur: {} is OFF line".format(rows[0], rows[1]))
 
         except Exception as e:
             print("CRITICAL: {} ".format(e))
