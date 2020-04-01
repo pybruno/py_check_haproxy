@@ -1,7 +1,7 @@
 
 # Nagios check_haproxy
 ## requirements:
-- python 2.7
+- python 2.7, python 3.7
 - requests
 
 use url to check haproxy backend status
